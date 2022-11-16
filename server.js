@@ -11,6 +11,8 @@ const session = require('express-session');
 app.use(session({secret : '비밀코드', resave : true, saveUninitialized: false}));
 app.use(passport.initialize());
 app.use(passport.session()); 
+const port = process.env.PORT || 8000;
+
 
 
 const Axios = require('axios');
@@ -43,8 +45,8 @@ MongoClient.connect('mongodb+srv://p42510:obliviate12!@cluster0.dxteu12.mongodb.
 	// });
 });
 
-app.listen(8000, function () {
-    console.log('listening on 8000')
+app.listen(port, function () {
+    console.log(`listening on ${port}`)
 });
 
 app.get('/', function(req,res){
