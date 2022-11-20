@@ -132,7 +132,7 @@ app.post('/naver/register', function(req,res){
 //   })
 // });
 
-app.post('/login', function (req, res) {
+app.post('/naver/login', function (req, res) {
   passport.authenticate('local', {}, function(error, user, msg){ 
       if (!user) {
         req.send('fail')
