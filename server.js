@@ -53,10 +53,6 @@ app.get('/', function(req,res){
     res.send('test')
 })
 
-// app.use('/naver', naverRouter)
-
-
-
 app.get('/naver/getNaverMovie', async function (req, res) {
     let query = req.query.query;
     let reqOptions = {
@@ -126,14 +122,31 @@ app.post('/naver/register', function(req,res){
 
 
 // 응답해주기 전에 local 방식으로 아이디 비번을 인증(함수 두번쨰 파라미터 )
-// (failureRedirect라는 부분은 로그인 인증 실패시 이동시켜줄 경로
-app.post('/naver/login', passport.authenticate('local', {failureRedirect : '/naver/fail'}),function(req, res){
-  // console.log(res);
-  res.send('성공')
-  db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
-    if(err) return err
-    // console.log(req.user);
-  })
+// // (failureRedirect라는 부분은 로그인 인증 실패시 이동시켜줄 경로
+// app.post('/naver/login', passport.authenticate('local', {failureRedirect : '/naver/fail'}),function(req, res){
+//   // console.log(res);
+//   res.status(200).json({message:'success'})
+//   db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
+//     if(err) return err
+//     // console.log(req.user);
+//   })
+// });
+
+app.post('/login', function (req, res) {
+  passport.authenticate('local', {}, function(error, user, msg){ 
+      if (!user) {
+        req.send('fail')
+      } else {
+        req.login(user, function(err){
+          if(err){ return next(err); }
+          res.status(200).json({message:'success'})
+          db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
+            if(err) return err
+            // console.log(req.user);
+          })
+        });
+      }
+  })(req, res);
 });
 
 // app.get('/mypage', 로그인했니,function(req,res){
