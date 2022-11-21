@@ -135,7 +135,8 @@ app.post('/naver/register', function(req,res){
 app.post('/naver/login', function (req, res) {
   passport.authenticate('local', {}, function(error, user, msg){ 
       if (!user) {
-        req.send('fail')
+        res.status(200).json({message:'fail'})
+        console.log(res);
       } else {
         req.login(user, function(err){
           if(err){ return next(err); }
