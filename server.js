@@ -27,7 +27,6 @@ app.set('view engine', 'jade');
 app.use(express.urlencoded({extended:false}))
 app.use(express.static(path.join(__dirname, 'public')))
 
-
 // app.use(express.static(path.join(__dirname, '../build')));
 
 // app.get('/', function (req, res) {
@@ -142,6 +141,20 @@ app.post('/naver/login', function (req, res) {
           res.status(200).json({message:'success'})
           db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
             if(err) return err
+            // 로그인 성공시 세션을 저장시키는 코드
+            // 위 코드의 결과가 아이디/비번 검증 성공시 user로 들어감
+          passport.serializeUser(function (user, done) {
+            done(null, user.id)
+          });
+          // 이 세션 데이터를 가진 사람을 찾아줌(마이 페이지 접속시 발동)
+          // 위에 user.id 랑 밑에 아이디랑 똑같은애
+          passport.deserializeUser(function (아이디, done) {
+            db.collection('user').findOne({id: 아이디},
+            function(error,result){
+                done(null, result)
+                // result는 mypage에서 찾은 데이터를 user를 통해 데이터전달가능 
+            })
+          }); 
             // console.log(req.user);
           })
         });
@@ -172,21 +185,21 @@ passport.use(new LocalStrategy({
   })
 }));
 
-// 로그인 성공시 세션을 저장시키는 코드
-// 위 코드의 결과가 아이디/비번 검증 성공시 user로 들어감
-passport.serializeUser(function (user, done) {
-  done(null, user.id)
-});
+// // 로그인 성공시 세션을 저장시키는 코드
+// // 위 코드의 결과가 아이디/비번 검증 성공시 user로 들어감
+// passport.serializeUser(function (user, done) {
+//   done(null, user.id)
+// });
 
-// 이 세션 데이터를 가진 사람을 찾아줌(마이 페이지 접속시 발동)
-// 위에 user.id 랑 밑에 아이디랑 똑같은애
-passport.deserializeUser(function (아이디, done) {
-  db.collection('user').findOne({id: 아이디},
-  function(error,result){
-      done(null, result)
-      // result는 mypage에서 찾은 데이터를 user를 통해 데이터전달가능 
-  })
-}); 
+// // 이 세션 데이터를 가진 사람을 찾아줌(마이 페이지 접속시 발동)
+// // 위에 user.id 랑 밑에 아이디랑 똑같은애
+// passport.deserializeUser(function (아이디, done) {
+//   db.collection('user').findOne({id: 아이디},
+//   function(error,result){
+//       done(null, result)
+//       // result는 mypage에서 찾은 데이터를 user를 통해 데이터전달가능 
+//   })
+// }); 
 
 function 로그인했니(req,res,next){
   if (req.user){
@@ -198,7 +211,7 @@ function 로그인했니(req,res,next){
 
 app.get('/naver/login', function(req,res){
   res.send(req.user)
-  // console.log(req.user);
+  console.log(req.user);
 })
 
 app.get('/naver/fail', function(req,res){
