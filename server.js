@@ -132,6 +132,11 @@ app.post('/naver/register', function(req,res){
 //   })
 // });
 
+app.get('/naver/login', function(req,res){
+  res.send(req.user)
+  // console.log(req.user);
+})
+
 app.post('/naver/login', function (req, res) {
   passport.authenticate('local', {}, function(error, user, msg){ 
       if (!user) {
@@ -149,63 +154,6 @@ app.post('/naver/login', function (req, res) {
       }
   })(req, res);
 });
-
-
-// app.get('/mypage', 로그인했니,function(req,res){
-//   console.log(req.user);
-//   res.render('mypage.ejs', {사용자: req.user})
-// })
-passport.use(new LocalStrategy({
-  usernameField: 'id', // <input>의 name 속성값
-  passwordField: 'pw',
-  session: true,
-  passReqToCallback: false, //아이디/비번말고 다른 정보검사가 필요한지
-}, function (입력한아이디, 입력한비번, done) {
-  //console.log(입력한아이디, 입력한비번);
-  db.collection('user').findOne({ id: 입력한아이디 }, function (에러, 결과) {
-    if (에러) return done(에러)
-  //아이디/비번 검사 성공하면 return done(null,결과) 실행
-    if (!결과) return done(null, false, { message: '존재하지않는 아이디요' })
-    if (입력한비번 == 결과.pw) {
-      return done(null, 결과)
-    } else {
-      return done(null, false, { message: '비번틀렸어요' })
-    }
-  })
-}));
-
-// 로그인 성공시 세션을 저장시키는 코드
-// 위 코드의 결과가 아이디/비번 검증 성공시 user로 들어감
-passport.serializeUser(function (user, done) {
-  done(null, user.id)
-});
-
-// 이 세션 데이터를 가진 사람을 찾아줌(마이 페이지 접속시 발동)
-// 위에 user.id 랑 밑에 아이디랑 똑같은애
-passport.deserializeUser(function (아이디, done) {
-  db.collection('user').findOne({id: 아이디},
-  function(error,result){
-      done(null, result)
-      // result는 mypage에서 찾은 데이터를 user를 통해 데이터전달가능 
-  })
-}); 
-
-function 로그인했니(req,res,next){
-  if (req.user){
-      next()
-  } else {
-      res.send('로그인 안하셨어요')
-  }
-}
-
-app.get('/naver/login', function(req,res){
-  res.send(req.user)
-  // console.log(req.user);
-})
-
-app.get('/naver/fail', function(req,res){
-  res.send('fail')
-})
 
 app.get('/naver/mypage', 로그인했니,function(req,res){
   res.send(req.user)
@@ -243,6 +191,55 @@ app.get('/naver/logout', function(req,res){
       }
     })
 })
+passport.use(new LocalStrategy({
+  usernameField: 'id', // <input>의 name 속성값
+  passwordField: 'pw',
+  session: true,
+  passReqToCallback: false, //아이디/비번말고 다른 정보검사가 필요한지
+}, function (입력한아이디, 입력한비번, done) {
+  //console.log(입력한아이디, 입력한비번);
+  db.collection('user').findOne({ id: 입력한아이디 }, function (에러, 결과) {
+    if (에러) return done(에러)
+  //아이디/비번 검사 성공하면 return done(null,결과) 실행
+    if (!결과) return done(null, false, { message: '존재하지않는 아이디요' })
+    if (입력한비번 == 결과.pw) {
+      return done(null, 결과)
+    } else {
+      return done(null, false, { message: '비번틀렸어요' })
+    }
+  })
+}));
+
+// 로그인 성공시 세션을 저장시키는 코드
+// 위 코드의 결과가 아이디/비번 검증 성공시 user로 들어감
+passport.serializeUser(function (user, done) {
+  done(null, user.id)
+});
+
+// 이 세션 데이터를 가진 사람을 찾아줌(마이 페이지 접속시 발동)
+// 위에 user.id 랑 밑에 아이디랑 똑같은애
+passport.deserializeUser(function (아이디, done) {
+  db.collection('user').findOne({id: 아이디},
+  function(error,result){
+      done(null, result)
+      console.log(result);
+      // result는 mypage에서 찾은 데이터를 user를 통해 데이터전달가능 
+  })
+}); 
+
+function 로그인했니(req,res,next){
+  if (req.user){
+      next()
+  } else {
+      res.send('로그인 안하셨어요')
+  }
+}
+
+app.get('/naver/fail', function(req,res){
+  res.send('fail')
+})
+
+
 
 // 리액트 연결
 
