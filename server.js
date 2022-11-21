@@ -150,6 +150,7 @@ app.post('/naver/login', function (req, res) {
   })(req, res);
 });
 
+
 // app.get('/mypage', 로그인했니,function(req,res){
 //   console.log(req.user);
 //   res.render('mypage.ejs', {사용자: req.user})
