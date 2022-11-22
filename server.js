@@ -17,7 +17,7 @@ const port = process.env.PORT || 8000;
 
 const Axios = require('axios');
 app.use(cors(
-  {origin:'*',
+  {origin:true,
   credentials:true}
 ))
 
