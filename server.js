@@ -31,21 +31,17 @@ app.use(express.urlencoded({extended:false}))
 app.use(express.static(path.join(__dirname, 'public')))
 
 
-// app.use(express.static(path.join(__dirname, '../build')));
+app.use(express.static(path.join(__dirname, '../build')));
 
-// app.get('/', function (req, res) {
-//   res.sendFile(path.join(__dirname, '../build/index.html'));
-// });
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, '../build/index.html'));
+});
 
 var db;
 
 MongoClient.connect('mongodb+srv://p42510:obliviate12!@cluster0.dxteu12.mongodb.net/?retryWrites=true&w=majority', { useUnifiedTopology: true }, function (error, client) {
 	if (error) return console.log(error)
 	db = client.db('movie');
-
-    //     db.collection('post').insertOne( {title : '응가하기', date:'10-22'} , function(에러, 결과){
-	//     // console.log('저장완료'); 
-	// });
 });
 
 app.listen(port, function () {
@@ -134,29 +130,59 @@ app.post('/naver/register', function(req,res){
 //     // console.log(req.user);
 //   })
 // });
+passport.use(new LocalStrategy({
+  usernameField: 'id', // <input>의 name 속성값
+  passwordField: 'pw',
+  session: true,
+  passReqToCallback: false, //아이디/비번말고 다른 정보검사가 필요한지
+}, function (입력한아이디, 입력한비번, done) {
+  //console.log(입력한아이디, 입력한비번);
+  db.collection('user').findOne({ id: 입력한아이디 }, function (에러, 결과) {
+    if (에러) return done(에러)
+  //아이디/비번 검사 성공하면 return done(null,결과) 실행
+    if (!결과) return done(null, false, { message: '존재하지않는 아이디요' })
+    if (입력한비번 == 결과.pw) {
+      return done(null, 결과)
+    } else {
+      return done(null, false, { message: '비번틀렸어요' })
+    }
+  })
+}));
 
 app.get('/naver/login', function(req,res){
   res.send(req.user)
   // console.log(req.user);
 })
 
-app.post('/naver/login', function (req, res) {
-  passport.authenticate('local', {}, function(error, user, msg){ 
-      if (!user) {
-        res.status(200).json({message:'fail'})
-        console.log(res);
-      } else {
-        req.login(user, function(err){
-          if(err){ return next(err); }
-          res.status(200).json({message:'success'})
-          db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
-            if(err) return err
-            // console.log(req.user);
-          })
-        });
-      }
-  })(req, res);
+app.post('/naver/login', passport.authenticate('local', {failureRedirect : '/naver/fail'}),function(req, res){
+  console.log(res);
+  if(req.user.id == req.body.id && req.user.pw == req.body.pw){
+    res.status(200).json({message:'success'})
+    db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
+      if(err) return err
+      // console.log(req.user);
+    })
+  }else{
+    res.status(401).json({message:'fail'})
+  }
 });
+// app.post('/naver/login', function (req, res) {
+//   passport.authenticate('local', {}, function(error, user, msg){ 
+//       if (!user) {
+//         res.status(200).json({message:'fail'})
+//         console.log(res);
+//       } else {
+//         req.login(user, function(err){
+//           if(err){ return next(err); }
+//           res.status(200).json({message:'success'})
+//           db.collection('user').updateOne({id:req.user.id},{$set:{isLogin:true}},function(err,result){
+//             if(err) return err
+//             // console.log(req.user);
+//           })
+//         });
+//       }
+//   })(req, res);
+// });
 
 app.get('/naver/mypage', 로그인했니,function(req,res){
   res.send(req.user)
@@ -194,24 +220,6 @@ app.get('/naver/logout', function(req,res){
       }
     })
 })
-passport.use(new LocalStrategy({
-  usernameField: 'id', // <input>의 name 속성값
-  passwordField: 'pw',
-  session: true,
-  passReqToCallback: false, //아이디/비번말고 다른 정보검사가 필요한지
-}, function (입력한아이디, 입력한비번, done) {
-  //console.log(입력한아이디, 입력한비번);
-  db.collection('user').findOne({ id: 입력한아이디 }, function (에러, 결과) {
-    if (에러) return done(에러)
-  //아이디/비번 검사 성공하면 return done(null,결과) 실행
-    if (!결과) return done(null, false, { message: '존재하지않는 아이디요' })
-    if (입력한비번 == 결과.pw) {
-      return done(null, 결과)
-    } else {
-      return done(null, false, { message: '비번틀렸어요' })
-    }
-  })
-}));
 
 // 로그인 성공시 세션을 저장시키는 코드
 // 위 코드의 결과가 아이디/비번 검증 성공시 user로 들어감
@@ -239,13 +247,13 @@ function 로그인했니(req,res,next){
 }
 
 app.get('/naver/fail', function(req,res){
-  res.send('fail')
+  res.status(200).json({message:'fail'})
 })
 
 
 
 // 리액트 연결
 
-// app.get('*', function (req, res) {
-//   res.sendFile(path.join(__dirname, '/searchmovie/build/index.html'));
-// });
+app.get('*', function (req, res) {
+  res.sendFile(path.join(__dirname, '/searchmovie/build/index.html'));
+});
