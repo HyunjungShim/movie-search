@@ -1,5 +1,5 @@
-# 영화검색 사이트  (Movie-search-project)
-
+# 영화검색 사이트 (Movie-search-project)
+#### 링크: https://movie-search-project2.herokuapp.com/
 #### 사용기술
 #### 1. React
 	- 프론트앤드 부문 화면 구현 담당
